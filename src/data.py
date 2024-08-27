@@ -11,7 +11,7 @@ from tqdm import tqdm
 import numpy as np
 from datasets import Dataset
 
-logging.basicConfig(level=logging.INFO) 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 nlp = spacy.load("en_core_web_sm")
@@ -58,7 +58,7 @@ class BaseDataset:
         ground_truths = {ground_truth} if isinstance(ground_truth, str) else set(ground_truth)
         if ground_truth_id and isinstance(ground_truth_id, str):
             ground_truths.update(cls.get_all_alias(ground_truth_id))
-            
+
         final_metric = {'f1': 0, 'precision': 0, 'recall': 0}
         for ground_truth in ground_truths:
             normalized_prediction = cls.normalize_answer(prediction)
@@ -114,7 +114,7 @@ class BaseDataset:
             example['case'] = case
             return example
         self.dataset = self.dataset.map(_format_for_dataset)
-    
+
     def get_real_prediction(self, pred):
         return pred
 
@@ -196,10 +196,10 @@ class StrategyQA(BaseDataset):
             dataset_2 = json.load(fin)
         for data in tqdm(dataset_1):
             example = {
-                "qid": data["qid"], 
-                "question": data["question"], 
-                "cot": " ".join(data["facts"]), 
-                "answer": "yes" if data["answer"] == True else "no", 
+                "qid": data["qid"],
+                "question": data["question"],
+                "cot": " ".join(data["facts"]),
+                "answer": "yes" if data["answer"] == True else "no",
             }
             title = []
             ctxs = []
@@ -281,11 +281,12 @@ class WikiMultiHopQA(BaseDataset):
     demo_input_template = test_input_template = lambda self, ques: f'Question: {ques}\nAnswer:'
     output_template = lambda self, cot, ans: f'{cot} So the answer is {ans}.'
 
-    def __init__(self, data_path: str): 
+    def __init__(self, data_path: str):
         logger.info(f"Loading WikiMultiHopQA from {data_path}")
         dataset = []
-        with open(os.path.join(data_path, 'dev.json'), 'r') as fin:
+        with open(os.path.join(data_path, 'dev_10.json'), 'r') as fin:
             js = json.load(fin)
+
             for example in tqdm(js):
                 qid = example['_id']
                 question = example['question']
@@ -301,7 +302,7 @@ class WikiMultiHopQA(BaseDataset):
                 })
         self.dataset = Dataset.from_list(dataset)
         self.init_id_aliases(data_path)
-        
+
     @classmethod
     def init_id_aliases(cls, data_path):
         cls.id_alias: Dict[str, List[str]] = {}
@@ -351,7 +352,7 @@ class HotpotQA(BaseDataset):
         },
         {
             'question': "Were Lonny and Allure both founded in the 1990s?",
-            'cot': "Lonny (magazine) was founded in 2009. Allure (magazine) was founded in 1991. Thus, of the two, only Allure was founded in 1990s.", 
+            'cot': "Lonny (magazine) was founded in 2009. Allure (magazine) was founded in 1991. Thus, of the two, only Allure was founded in 1990s.",
             'answer': "no",
         },
         {
@@ -392,7 +393,7 @@ class HotpotQA(BaseDataset):
     ]
 
     demo_input_template = lambda self, ques: f'Question: {ques}\nAnswer:'
-    test_input_template = lambda self, ques: f'Answer the following question by reasoning step-by-step, following the example above.\nQuestion: {ques}\nAnswer:' 
+    test_input_template = lambda self, ques: f'Answer the following question by reasoning step-by-step, following the example above.\nQuestion: {ques}\nAnswer:'
     output_template = lambda self, cot, ans: f'{cot} So the answer is {ans}.'
 
     def __init__(self, data_path: str):
@@ -535,7 +536,7 @@ class IIRC(BaseDataset):
     ]
 
     demo_input_template = lambda self, ques: f'Question: {ques}\nAnswer:'
-    test_input_template = lambda self, ques: f'Question: {ques}\nAnswer:' 
+    test_input_template = lambda self, ques: f'Question: {ques}\nAnswer:'
     output_template = lambda self, cot, ans: f'{cot} So the answer is {ans}.'
 
     def __init__(self, data_path: str):
@@ -556,7 +557,7 @@ class IIRC(BaseDataset):
                         answer = [ans['answer_value']]
                     elif ans['type'] == 'span':
                         answer = [v['text'].strip() for v in ans['answer_spans']]
-                    
+
                     # context = example['context']
                     dataset.append({
                         'qid': qid,

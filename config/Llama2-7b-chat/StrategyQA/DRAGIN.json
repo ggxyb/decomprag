@@ -1,10 +1,10 @@
 {
-    "model_name_or_path": "meta-llama/Llama-2-7b-chat",
+    "model_name_or_path": "meta-llama/Llama-2-7b-chat-hf",
     "method": "dragin",
     "dataset": "strategyqa",
     "data_path": "../data/strategyqa",
     "fewshot": 6,
-    "sample": 1000,
+    "sample": 500,
     "shuffle": false,
     "generate_max_length": 100,
     "query_formulation": "real_words",

@@ -7,13 +7,13 @@ import logging
 from data import StrategyQA, WikiMultiHopQA, HotpotQA, IIRC
 from generate import *
 
-logging.basicConfig(level=logging.INFO) 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config_path", type=str, required=True)
+    parser.add_argument("-c", "--config_path", type=str, required=True, default="config/Llama2-7b-chat/2WikiMultihopQA/SR-RAG.json")
     args = parser.parse_args()
     config_path = args.config_path
     with open(config_path, "r") as f:
@@ -21,7 +21,7 @@ def get_args():
     args = argparse.Namespace(**args)
     args.config_path = config_path
     if "shuffle" not in args:
-        args.shuffle = False 
+        args.shuffle = False
     if "use_counter" not in args:
         args.use_counter = True
     return args
@@ -65,7 +65,7 @@ def main():
     if args.sample != -1:
         samples = min(len(data), args.sample)
         data = data.select(range(samples))
-   
+
     # 根据 method 选择不同的生成策略
     if args.method == "non-retrieval":
         model = BasicRAG(args)
@@ -79,6 +79,8 @@ def main():
         model = EntityRAG(args)
     elif args.method == "attn_prob" or args.method == "dragin":
         model = AttnWeightRAG(args)
+    elif args.method == "my_method":
+        model = MyMethodRAG(args)
     else:
         raise NotImplementedError
 
@@ -89,13 +91,13 @@ def main():
         pred = model.inference(batch["question"], batch["demo"], batch["case"])
         pred = pred.strip()
         ret = {
-            "qid": batch["qid"], 
+            "qid": batch["qid"],
             "prediction": pred,
         }
         if args.use_counter:
             ret.update(model.counter.calc(last_counter))
         output_file.write(json.dumps(ret)+"\n")
-    
+
 
 if __name__ == "__main__":
     main()
